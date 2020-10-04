@@ -85,10 +85,8 @@ public class Editora {
         if(res.equals("Sucesso")){
             ResultSet result = conn.getResult();
             this.result = result;
-            return "Sucesso";
-        }else{
-            return res;
+            
         }
-       
+        return res;
     }
 }
