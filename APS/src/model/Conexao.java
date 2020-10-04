@@ -23,7 +23,8 @@ public class Conexao {
     private String user;
     private String pwd;
     private ResultSet result;
-
+    
+    
     public String getHost() {
         return host;
     }
