@@ -6,7 +6,6 @@
 package model;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  *
@@ -16,17 +15,57 @@ import java.sql.SQLException;
 public class Editora {
     
     private ResultSet result;
+    private String id;
+    private String nome;
+    private String url;
+    private Conexao conn;
 
     public Editora() {
         
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public Conexao getConn() {
+        return conn;
+    }
+
+    public void setConn(Conexao conn) {
+        this.conn = conn;
+    }
+    
+    
     public ResultSet getResult() {
         return result;
     }
     public void setResult(ResultSet result){
         this.result = result;
     }
+    
+    
+    
     public String Validate(String name,String url){
         if(name.length() > 30){
             return "O nome da editora deve ter no máximo 30 caracters";
@@ -68,7 +107,7 @@ public class Editora {
         if(whereClause.equals("")){
             res = conn.executeCommand("update publishers set "+setClause);
         }else{
-            res = conn.executeCommand("update publishers set "+setClause+" where "+ whereClause);
+            res = conn.executeCommand("update publishers set "+setClause+" where "+ whereClause) + ";";
         }
         return res;
         
