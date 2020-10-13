@@ -20,6 +20,8 @@ public class Livros{
     private double price;
     private Conexao conn;
 
+    
+    
     public ResultSet getResult() {
         return result;
     }
@@ -87,8 +89,10 @@ public class Livros{
         res = Validate(title, isbn);
         
         if(res.equals("Sucesso")){
-            res = conn.executeCommand("insert into books (title,isbn,publisher_id,price) "
+            conn.executeCommand("insert into books (title,isbn,publisher_id,price) "
                     + "values ('" + title + "','" + isbn + "'," + publisherId + "," + price + ");");
+            return "Sucesso";
+            
         }
         
         return res;

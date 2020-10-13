@@ -103,7 +103,7 @@ public class TableModel extends AbstractTableModel{
             //Faz a verificação caso a confirmação no JOptionPane seja positiva. Se for, ele altera a célula atravéso Switch Case.
             switch(coluna){
             case 0:  
-                dados.get(linha).setId( (String) valor);
+                dados.get(linha).setId( (int) valor);
                 break;
             case 1:  
                 dados.get(linha).setNome( (String) valor);
@@ -124,6 +124,20 @@ public class TableModel extends AbstractTableModel{
         System.out.println("Valor antigo: " + valorAnterior);//Apagar posteriormente.
          
         
+    }
+    
+    public void Deletar(Conexao conn, int id, int linha){
+        for(int i = 0; i < dados.size(); i++){
+            if(id == dados.get(i).getId()){
+                String res = dados.get(i).delete(conn, "publisher_id = "+ id + ";");
+                if(res.contains("ERROR")){
+                    JOptionPane.showMessageDialog(null, "Não foi possível excluir a Editora.\nConta associada a algum livro.");
+                }else{
+                    dados.remove(i);
+                }
+            }
+        }
+        this.fireTableRowsDeleted(linha, linha);
     }
 
     public static List<Editora> getDados() {

@@ -6,6 +6,8 @@
 package view;
 
 import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import model.Conexao;
 import model.Editora;
 import model.Livros;
@@ -26,9 +28,15 @@ public class formIncluir extends javax.swing.JFrame {
     public formIncluir() {
         initComponents();
         
+        PopularComboBox(); //Preenche o ComboBox
+        
+        
+    }
+    
+    public void PopularComboBox(){
         
         comboBoxAutor.removeAllItems(); //Acho que o nome do método já é meio sugestivo, né? @Will
-        comboBoxAutor.addItem("--- Escolha um Editora ---");
+        comboBoxAutor.addItem("--- Escolha uma Editora ---");
         
         for(int i = 0; i < editoras.size(); i++){  //O for percorre o arrayList com as editoras
             comboBoxAutor.addItem(editoras.get(i).getNome()); //Aqui é adicionado ao comboBox os nomes das editoras
@@ -37,7 +45,6 @@ public class formIncluir extends javax.swing.JFrame {
         comboBoxAutor.setSelectedItem(0); //Deixa o comboBox selecionado com a primeira opção. No Caso "Escolha um editora"
             
         
-        
     }
 
     
@@ -45,7 +52,7 @@ public class formIncluir extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        tabbedPane = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
@@ -65,7 +72,7 @@ public class formIncluir extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         comboBoxAutor = new javax.swing.JComboBox<>();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -78,7 +85,7 @@ public class formIncluir extends javax.swing.JFrame {
             .addGap(0, 314, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Autor", jPanel1);
+        tabbedPane.addTab("Autor", jPanel1);
 
         jLabel5.setText("Nome");
 
@@ -125,7 +132,7 @@ public class formIncluir extends javax.swing.JFrame {
                 .addContainerGap(137, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Editora", jPanel2);
+        tabbedPane.addTab("Editora", jPanel2);
 
         jLabel1.setText("Título:");
 
@@ -205,20 +212,21 @@ public class formIncluir extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Livro", jPanel3);
+        tabbedPane.addTab("Livro", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonInserirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInserirActionPerformed
@@ -229,9 +237,21 @@ public class formIncluir extends javax.swing.JFrame {
         Conexao conn = new Conexao("localhost", "APS", "postgres", "Will"); //Conexão com o BD (Lembre-se sempre de mudar o usuario e senha para conectar com seu BD local, se for testar
         Editora editora = new Editora(); //Instancia um novo objeto do tipo Editora
         
-        editora.insert(conn, nome, url); // executa o comando insert into do BD para inserir uma nova editora
+        String res = editora.insert(conn, nome, url); // executa o comando insert into do BD para inserir uma nova editora
+        
+        if(res.equals("Sucesso")){
+            JOptionPane.showMessageDialog(null, "A Editora foi inserida com Sucesso!");
+            new formListar().AtualizaTable(); //Atualiza a tabela editora para inserir uma nova editora
+            
+            textFieldNome.setText("");
+            textFieldURL.setText("");
+            
+        }else{
+            JOptionPane.showMessageDialog(null, "A Editora não foi inserida!\nRevise as informações");
+        }
         
         
+        PopularComboBox();
     }//GEN-LAST:event_buttonInserirActionPerformed
 
     private void buttonCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCadastrarActionPerformed
@@ -242,19 +262,40 @@ public class formIncluir extends javax.swing.JFrame {
         double price = Double.parseDouble(textFieldPreco.getText()); // Pega o valor do TextField Preço
         
         for(int i=0; i < editoras.size(); i++){
-            if((String)comboBoxAutor.getSelectedItem() == editoras.get(i).getNome()){ //Verifica a editora selecionada no comboBox como a do ArrayList para pegar o Id da editora
-                publisherId = Integer.parseInt(editoras.get(i).getId()); //Pega o ID da Editora antes verificada
+            if(comboBoxAutor.getSelectedItem().equals(editoras.get(i).getNome())){ //Verifica a editora selecionada no comboBox como a do ArrayList para pegar o Id da editora
+                publisherId = editoras.get(i).getId(); //Pega o ID da Editora antes verificada
             }
         }
         Conexao conn = new Conexao("localhost", "APS", "postgres", "Will"); // Realiza a conexão com o BD
         Livros livro = new Livros(); //Instancia um objeto do tipo Livro
+        
+        
         System.out.println("Title: " + title); //Apagar dps todos esses print
         System.out.println("ISBN: " + isbn);
         System.out.println("ID: " + publisherId);
         System.out.println("Preço: " + price);
-        livro.insert(conn, title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+        
+        String res = livro.insert(conn, title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+        
+        if(res.equals("Sucesso")){
+            JOptionPane.showMessageDialog(null, "O livro foi cadastrado com Sucesso!");
+            new formListar().AtualizaTable();//Atualiza a tabela livros após cadastrar um novo livro
+            
+            textFieldTitulo.setText("");
+            textFieldIsbn.setText("");
+            textFieldPreco.setText("");
+            
+            PopularComboBox();
+        }else{
+            JOptionPane.showMessageDialog(null, "O Livro não foi cadastrado!\nRevise as informações");
+        }
+        
         
     }//GEN-LAST:event_buttonCadastrarActionPerformed
+
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
 
     /**
      * @param args the command line arguments
@@ -305,7 +346,7 @@ public class formIncluir extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField textFieldIsbn;
     private javax.swing.JTextField textFieldNome;
     private javax.swing.JTextField textFieldPreco;

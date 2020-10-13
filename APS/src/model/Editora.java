@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 public class Editora {
     
     private ResultSet result;
-    private String id;
+    private int id;
     private String nome;
     private String url;
     private Conexao conn;
@@ -24,11 +24,11 @@ public class Editora {
         
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -84,6 +84,7 @@ public class Editora {
         
         if(res.equals("Sucesso")){
             res = conn.executeCommand("insert into publishers (name,url) values ('"+name+"','"+url+"')");
+            return "Sucesso";
         }
         
         return res;
