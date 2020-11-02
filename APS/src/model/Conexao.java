@@ -84,7 +84,7 @@ public class Conexao {
         }catch (SQLException e){
             throw new SQLException("Erro de conexão:\t" + e.getMessage());
         }catch (ClassNotFoundException e){
-            throw new SQLException("ClassNotFound:\t" + e.getMessage());
+            throw new ClassNotFoundException("ClassNotFound:\t" + e.getMessage());
         }
     }
     
