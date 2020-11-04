@@ -6,6 +6,7 @@
 package model;
 
 import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -72,12 +73,24 @@ public class Livros{
     
     
     
-    public String Validate(String title,String isbn){
+    public String Validate(String title, String isbn, Double price){
+        Convert validar = new Convert();
+        
         if(title.length() > 60){
+            JOptionPane.showMessageDialog(null, "O título do livro deve ter no máximo 60 caracters!");
             return "O título do livro deve ter no máximo 60 caracters";
         }
         if(isbn.length() > 13){
+            JOptionPane.showMessageDialog(null, "O ISBN do livro deve ter no máximo 13 caracters!");
             return "O ISBN do livro deve ter no máximo 13 caracters";
+        }
+        if(validar.isNumber(isbn)){
+            JOptionPane.showMessageDialog(null, "O ISBN deve conter apenas números!");
+            return "O ISBN deve conter apenas números!";
+        }
+        if(validar.isNumber(Double.toString(price))){
+            JOptionPane.showMessageDialog(null, "O Preço deve conter apenas números!");
+            return "O Preço deve conter apenas números!";
         }
         
         return "Sucesso";
@@ -86,7 +99,7 @@ public class Livros{
     public String insert(Conexao conn, String title, String isbn, int publisherId, double price){
         String res;
         
-        res = Validate(title, isbn);
+        res = Validate(title, isbn, price);
         
         if(res.equals("Sucesso")){
             conn.executeCommand("insert into books (title,isbn,publisher_id,price) "

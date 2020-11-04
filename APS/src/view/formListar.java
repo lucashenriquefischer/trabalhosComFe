@@ -9,10 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import model.Conexao;
+import model.Autor;
 import model.Editora;
 import model.Livros;
-import model.TableModel;
+import model.TableModelEditoras;
+import model.TableModelAutores;
 import model.TableModelLivros;
 
 /**
@@ -20,21 +21,27 @@ import model.TableModelLivros;
  * @author fischer
  */
 public class formListar extends javax.swing.JFrame {
-    //Instancia as classes TableModel, com o modelo de tabela definida de acordo com nossa necessidade
-    private static TableModel modelo = new TableModel(); //Instancia o modelo de tabela para editora
+    //Instancia as classes TableModelEditoras, com o modelo de tabela definida de acordo com nossa necessidade
+    private static TableModelEditoras modelo = new TableModelEditoras(); //Instancia o modelo de tabela para editora
     private static TableModelLivros modeloLivros = new TableModelLivros(); //Instancia um modelo de tabela para Livros
-    private static Conexao conn = new Conexao("localhost", "APS", "postgres", "Will"); // faz a conexão com o BD
+    private static TableModelAutores modeloAutores = new TableModelAutores();
+    private static formBdconection conexao = new formBdconection();//Instancia um objeto de conexão com o BD
     // ------------------------------- //
+   
     /**
      * Creates new form formListar
      */
+    
     public formListar() {
         initComponents();
         TableEditoras.setCellSelectionEnabled(true); //Torna uma única célula da Table selecionável
-        TableEditoras.setModel(modelo); // Seta o modelo o criado na classe TableModel.java na tabela (JTable)
+        TableEditoras.setModel(modelo); // Seta o modelo o criado na classe TableModelEditoras.java na tabela (JTable)
         
         TableLivros.setCellSelectionEnabled(true); //Torna uma única célula da Table selecionável
-        TableLivros.setModel(modeloLivros); // Seta o modelo o criado na classe TableModel.java na tabela (JTable)
+        TableLivros.setModel(modeloLivros); // Seta o modelo o criado na classe TableModelEditoras.java na tabela (JTable)
+        
+        TableLivros.setCellSelectionEnabled(true);
+        tableAutores.setModel(modeloAutores);
         
         PreencherTable();
         
@@ -42,10 +49,9 @@ public class formListar extends javax.swing.JFrame {
     
     public static void PreencherTable(){
         // --- Listar as Editoras --- //
-        
         Editora editora = new Editora(); 
         String res;
-        res = editora.select(conn, ""); //executa o comando select no BD
+        res = editora.select(conexao.getConn(), ""); //executa o comando select no BD
         if (res.equals("Sucesso")) {
             ResultSet result = editora.getResult(); // Pega os resultados do select
             try {
@@ -55,7 +61,7 @@ public class formListar extends javax.swing.JFrame {
                     editora2.setId(Integer.parseInt(result.getString("publisher_id")));
                     editora2.setNome(result.getString("name").trim()); 
                     editora2.setUrl(result.getString("url").trim());
-                    editora2.setConn(conn);
+                    editora2.setConn(conexao.getConn());
                     modelo.addRow(editora2); //Metodo chamada para popular as tabelas
                 }
                 
@@ -66,10 +72,9 @@ public class formListar extends javax.swing.JFrame {
         
         
         // --- Listar Livros --- //
-        
         Livros livro = new Livros(); 
         String res2;
-        res2 = livro.select(conn, ""); //executa o comando select no BD
+        res2 = livro.select(conexao.getConn(), ""); //executa o comando select no BD
         if (res2.equals("Sucesso")) {
             ResultSet result = livro.getResult(); // Pega os resultados do select
             try {
@@ -80,8 +85,29 @@ public class formListar extends javax.swing.JFrame {
                     livro2.setIsbn(result.getString("isbn").trim()); 
                     livro2.setPublisherId(Integer.parseInt(result.getString("publisher_id")));
                     livro2.setPrice(Double.parseDouble(result.getString("price").trim()));
-                    livro2.setConn(conn);
+                    livro2.setConn(conexao.getConn());
                     modeloLivros.addRow(livro2); //Metodo chamada para popular as tabelas
+                }
+            }catch (SQLException ex) {
+                Logger.getLogger(formListar.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        // --- Listar autores --- //
+        Autor autor = new Autor(); 
+        String resAutor;
+        resAutor = autor.select(conexao.getConn(), ""); //executa o comando select no BD
+        if (resAutor.equals("Sucesso")) {
+            ResultSet result = autor.getResult(); // Pega os resultados do select
+            try {
+                while (result.next()) { 
+
+                    Autor autor2 = new Autor(); // Cria um novo objeto do tipo autor com os resultados do select, para popular a tabela através desse objeto
+                    autor2.setAuthorId(result.getInt("author_id"));
+                    autor2.setName(result.getString("name").trim());
+                    autor2.setFname(result.getString("fname").trim()); 
+                    autor2.setConn(conexao.getConn());
+                    modeloAutores.addRow(autor2); //Metodo chamada para popular as tabelas
                 }
             }catch (SQLException ex) {
                 Logger.getLogger(formListar.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,11 +116,13 @@ public class formListar extends javax.swing.JFrame {
     }
    
     public void AtualizaTable(){
-        TableModel.getDados().clear();//Limpa os dados do Array
+        TableModelEditoras.getDados().clear();//Limpa os dados do Array
         TableModelLivros.getDados().clear();
+        TableModelAutores.getDados().clear();
         
         modelo.fireTableDataChanged();//Atualiza alterações na tabela
         modeloLivros.fireTableDataChanged();
+        modeloAutores.fireTableDataChanged();
         
         PreencherTable();//Chama o método para preencher novamente as tabelas
     }
@@ -111,30 +139,25 @@ public class formListar extends javax.swing.JFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jTabbedPane3 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
-        jButton4 = new javax.swing.JButton();
         buttonExcluirEditora = new javax.swing.JButton();
         ButtonInserirEditora = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         TableEditoras = new javax.swing.JTable();
         jTabbedPane4 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
-        jButton7 = new javax.swing.JButton();
         ButtonExcluirLivro = new javax.swing.JButton();
         buttonInserirLivro = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         TableLivros = new javax.swing.JTable();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        buttonExcluirAutor = new javax.swing.JButton();
+        buttonIncluirAutor = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable3 = new javax.swing.JTable();
-        jButton10 = new javax.swing.JButton();
+        tableAutores = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jButton4.setText("Modificar");
+        setTitle("Livraria Amazonas");
 
         buttonExcluirEditora.setText("Excluir");
         buttonExcluirEditora.addActionListener(new java.awt.event.ActionListener() {
@@ -169,12 +192,11 @@ public class formListar extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(32, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(buttonExcluirEditora, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(buttonExcluirEditora, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
                     .addComponent(ButtonInserirEditora, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(35, 35, 35))
         );
@@ -185,19 +207,16 @@ public class formListar extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jButton4)
-                        .addGap(4, 4, 4)
                         .addComponent(ButtonInserirEditora)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonExcluirEditora)))
+                        .addGap(18, 18, 18)
+                        .addComponent(buttonExcluirEditora)
+                        .addGap(14, 14, 14)))
                 .addContainerGap(215, Short.MAX_VALUE))
         );
 
-        jTabbedPane3.addTab("tab1", jPanel3);
+        jTabbedPane3.addTab("", jPanel3);
 
         jTabbedPane1.addTab("Editora", jTabbedPane3);
-
-        jButton7.setText("Modificar");
 
         ButtonExcluirLivro.setText("Excluir");
         ButtonExcluirLivro.addActionListener(new java.awt.event.ActionListener() {
@@ -231,12 +250,11 @@ public class formListar extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(32, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(ButtonExcluirLivro, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ButtonExcluirLivro, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
                     .addComponent(buttonInserirLivro, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(35, 35, 35))
         );
@@ -247,25 +265,32 @@ public class formListar extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jButton7)
-                        .addGap(4, 4, 4)
                         .addComponent(buttonInserirLivro)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ButtonExcluirLivro)))
+                        .addGap(18, 18, 18)
+                        .addComponent(ButtonExcluirLivro)
+                        .addGap(17, 17, 17)))
                 .addContainerGap(215, Short.MAX_VALUE))
         );
 
-        jTabbedPane4.addTab("tab1", jPanel2);
+        jTabbedPane4.addTab("", jPanel2);
 
         jTabbedPane1.addTab("Livro", jTabbedPane4);
 
-        jButton1.setText("Modificar");
+        buttonExcluirAutor.setText("Excluir");
+        buttonExcluirAutor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonExcluirAutorActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Excluir");
+        buttonIncluirAutor.setText("Incluir");
+        buttonIncluirAutor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonIncluirAutorActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Incluir");
-
-        jTable3.setModel(new javax.swing.table.DefaultTableModel(
+        tableAutores.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -276,20 +301,19 @@ public class formListar extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane3.setViewportView(jTable3);
+        jScrollPane3.setViewportView(tableAutores);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(buttonExcluirAutor, javax.swing.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                    .addComponent(buttonIncluirAutor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(35, 35, 35))
         );
         jPanel1Layout.setVerticalGroup(
@@ -299,20 +323,16 @@ public class formListar extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addGap(4, 4, 4)
-                        .addComponent(jButton3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)))
+                        .addGap(27, 27, 27)
+                        .addComponent(buttonIncluirAutor)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(buttonExcluirAutor)))
                 .addContainerGap(215, Short.MAX_VALUE))
         );
 
-        jTabbedPane2.addTab("tab1", jPanel1);
+        jTabbedPane2.addTab("", jPanel1);
 
         jTabbedPane1.addTab("Autor", jTabbedPane2);
-
-        jButton10.setText("jButton10");
-        jTabbedPane1.addTab("tab4", jButton10);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -320,7 +340,7 @@ public class formListar extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 610, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -329,50 +349,69 @@ public class formListar extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonInserirLivroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInserirLivroActionPerformed
         //Botão Inserir Livro
         formIncluir form = new formIncluir();
-        form.setVisible(true); //Abre o form de incluir 
+        form.setVisible(true); //Abre o form de incluir
         form.getTabbedPane().setSelectedIndex(2);//Seleciona a aba de incluir um novo livro
-
     }//GEN-LAST:event_buttonInserirLivroActionPerformed
 
     private void ButtonExcluirLivroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonExcluirLivroActionPerformed
         // Botão Excluir livro
 
         if(TableLivros.getSelectedRow() != -1){
-            modeloLivros.Deletar(conn, (String)TableLivros.getValueAt(TableLivros.getSelectedRow(), 1), TableLivros.getSelectedRow());
-            
+            modeloLivros.Deletar(this.conexao.getConn(), (String)TableLivros.getValueAt(TableLivros.getSelectedRow(), 1), TableLivros.getSelectedRow());
+            AtualizaTable();
         }
     }//GEN-LAST:event_ButtonExcluirLivroActionPerformed
 
     private void ButtonInserirEditoraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonInserirEditoraActionPerformed
         // Botão inserir Editora
         formIncluir form = new formIncluir();
-        form.setVisible(true); //Abre o form de incluir 
+        form.setVisible(true); //Abre o form de incluir
         form.getTabbedPane().setSelectedIndex(1);//Seleciona a aba de incluir nova Editora
 
-//        this.dispose();
+        //        this.dispose();
     }//GEN-LAST:event_ButtonInserirEditoraActionPerformed
 
     private void buttonExcluirEditoraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonExcluirEditoraActionPerformed
         // Botão excluir Editora
         // OBS: Se a editora estiver como chave estrangeira em algum livro no BD, ela não sera excluída. (Criar Tratamento)
         if(TableEditoras.getSelectedRow() != -1){
-            modelo.Deletar(conn, (int)TableEditoras.getValueAt(TableEditoras.getSelectedRow(), 0), TableEditoras.getSelectedRow());
-            
+            modelo.Deletar(this.conexao.getConn(), (String)TableEditoras.getValueAt(TableEditoras.getSelectedRow(), 0),
+                    (String)TableEditoras.getValueAt(TableEditoras.getSelectedRow(), 1), TableEditoras.getSelectedRow());
+            AtualizaTable();
         }
-        
+
         // -- Explicação do método -- //
         //O comando TableEditoras.getValueAt(int,int) pega o valor da celula especificada nos parâmetros.
         //O comando TableEditoras.getSelectedRow() pega o índice da celula selecionada na tabela.
         //Na comparação está verificando se há alguma linha selecionada. O valor -1 indica que não há nenhuma linha selecionada.
-        //Como o comando getSelectedRow retorna o índice da célula selecionada, ele está sendo passado 
+        //Como o comando getSelectedRow retorna o índice da célula selecionada, ele está sendo passado
         //como parâmetro para o comando getValueAt para pegar o valor da celula selecionada e assim o valor ser passado
         //como parâmetro do método Deletar.
     }//GEN-LAST:event_buttonExcluirEditoraActionPerformed
+
+    private void buttonIncluirAutorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonIncluirAutorActionPerformed
+        // Botão Incluir autores
+
+        formIncluir form = new formIncluir();
+        form.setVisible(true); //Abre o form de incluir
+        form.getTabbedPane().setSelectedIndex(0);//Seleciona a aba de incluir novo Autor
+    }//GEN-LAST:event_buttonIncluirAutorActionPerformed
+
+    private void buttonExcluirAutorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonExcluirAutorActionPerformed
+        // Botão excluir Autores
+
+        if(tableAutores.getSelectedRow() != -1){
+            modeloAutores.Deletar(this.conexao.getConn(), (String)tableAutores.getValueAt(tableAutores.getSelectedRow(), 0),
+                (String)tableAutores.getValueAt(tableAutores.getSelectedRow(), 1), tableAutores.getSelectedRow());
+            AtualizaTable();
+        }
+    }//GEN-LAST:event_buttonExcluirAutorActionPerformed
 
    
     
@@ -418,14 +457,10 @@ public class formListar extends javax.swing.JFrame {
     private javax.swing.JButton ButtonInserirEditora;
     private javax.swing.JTable TableEditoras;
     private javax.swing.JTable TableLivros;
+    private javax.swing.JButton buttonExcluirAutor;
     private javax.swing.JButton buttonExcluirEditora;
+    private javax.swing.JButton buttonIncluirAutor;
     private javax.swing.JButton buttonInserirLivro;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -436,6 +471,6 @@ public class formListar extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTabbedPane jTabbedPane3;
     private javax.swing.JTabbedPane jTabbedPane4;
-    private javax.swing.JTable jTable3;
+    private javax.swing.JTable tableAutores;
     // End of variables declaration//GEN-END:variables
 }

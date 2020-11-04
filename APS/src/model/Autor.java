@@ -6,6 +6,7 @@
 package model;
 
 import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -17,7 +18,7 @@ public class Autor{
     private String fname;
     private String name;
     private int authorId;
-    
+    private Conexao conn;
     
 
     
@@ -65,25 +66,33 @@ public class Autor{
     
     
     
-    public String Validate(String name,String fname){
-        if(name.length() > 30){
-            return "O sobre nome do autor do livro deve ter no máximo 30 caracters";
+    public String Validate(String name, String fname){
+        Convert validar = new Convert();
+        
+        if(name.length() > 25){
+            JOptionPane.showMessageDialog(null, "O nome do autor deve ter no máximo 25 caracters!");
+            return "O nome do autor deve ter no máximo 25 caracters";
         }
-        if(fname.length() > 30){
-            return "O nome do autor deve ter no máximo 30 caracters";
+        if(fname.length() > 25){
+            JOptionPane.showMessageDialog(null, "O sobrenome do autor do livro deve ter no máximo 25 caracters!");
+            return "O sobrenome do autor do livro deve ter no máximo 25 caracters";
+        }
+        if(validar.isOnlyString(name) == false || validar.isOnlyString(fname) == false){
+            JOptionPane.showMessageDialog(null, "Nome ou sobrenome Inválido!");
+            return "Nome ou sobrenome Inválido!";
         }
         
         return "Sucesso";
     }
     
-    public String insert(Conexao conn, String name, String fname, int authorId){
+    public String insert(Conexao conn, String name, String fname){
         String res;
         
         res = Validate(name, fname);
         
         if(res.equals("Sucesso")){
-            conn.executeCommand("insert into author (name,fname,author_id) "
-                    + "values ('" + name + "','" + fname + "'," + authorId + ");");
+            conn.executeCommand("insert into authors (name,fname) "
+                    + "values ('" + name + "','" + fname + "');");
             return "Sucesso";
             
         }
@@ -95,9 +104,9 @@ public class Autor{
     public String delete(Conexao conn,String whereClause){
         String res;
         if(whereClause.equals("")){
-            res = conn.executeCommand("delete from author");
+            res = conn.executeCommand("delete from authors");
         }else{
-            res = conn.executeCommand("delete from author where "+ whereClause);
+            res = conn.executeCommand("delete from authors where "+ whereClause);
         }
         
         return res;
@@ -107,9 +116,9 @@ public class Autor{
     public String update(Conexao conn,String setClause,String whereClause){
         String res;
         if(whereClause.equals("")){
-            res = conn.executeCommand("update author set "+setClause);
+            res = conn.executeCommand("update authors set "+setClause);
         }else{
-            res = conn.executeCommand("update author set "+setClause+" where "+ whereClause) + ";";
+            res = conn.executeCommand("update authors set "+setClause+" where "+ whereClause) + ";";
         }
         return res;
         
@@ -118,9 +127,9 @@ public class Autor{
     public String select(Conexao conn,String whereClause){
         String res;
         if(whereClause.equals("")){
-            res = conn.executeCommand("select * from author");
+            res = conn.executeCommand("select * from authors");
         }else{
-            res = conn.executeCommand("select * from author where "+whereClause);
+            res = conn.executeCommand("select * from authors where "+whereClause);
         }
         
         if(res.equals("Sucesso")){

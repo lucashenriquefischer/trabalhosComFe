@@ -6,6 +6,7 @@
 package model;
 
 import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -67,12 +68,16 @@ public class Editora {
     
     
     public String Validate(String name,String url){
+        
         if(name.length() > 30){
+            JOptionPane.showMessageDialog(null, "O nome da editora deve ter no máximo 30 caracters!");
             return "O nome da editora deve ter no máximo 30 caracters";
         }
         if(url.length() > 80){
+            JOptionPane.showMessageDialog(null, "A URL da editora deve ter no máximo 80 caracters!");
             return "a URL da editora deve ter no máximo 80 caracters";
         }
+        
         
         return "Sucesso";
     }

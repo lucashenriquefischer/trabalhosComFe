@@ -6,12 +6,15 @@
 package view;
 
 import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
-import model.Conexao;
+import model.Autor;
 import model.Editora;
 import model.Livros;
-import model.TableModel;
+import model.LivrosAutores;
+import model.TableModelEditoras;
+import model.TableModelAutores;
 
 /**
  *
@@ -22,15 +25,17 @@ public class formIncluir extends javax.swing.JFrame {
     /**
      * Creates new form formIncluir
      */
-    List<Editora> editoras = TableModel.getDados(); //recebe as editoras antes já listadas
+    private List<Editora> editoras = TableModelEditoras.getDados(); //recebe as editoras antes já listadas
+    private List<Autor> autores = TableModelAutores.getDados(); //recebe os autores antes já listados do BD
+    private DefaultListModel modelList = new DefaultListModel();//Instancia um modelo de lista(modelList) do tipo Default
+    private formBdconection conexao = new formBdconection();//Instancia um objeto de conexão com o BD
     
+    private int seq_no = 0;//foi feito uma incremetação pra essa variável
     
     public formIncluir() {
         initComponents();
         
         PopularComboBox(); //Preenche o ComboBox
-        
-        
     }
     
     public void PopularComboBox(){
@@ -44,7 +49,14 @@ public class formIncluir extends javax.swing.JFrame {
         
         comboBoxAutor.setSelectedItem(0); //Deixa o comboBox selecionado com a primeira opção. No Caso "Escolha um editora"
             
-        
+        //ComboBox Autores
+        comboBoxAutores.removeAllItems(); //Acho que o nome do método já é meio sugestivo, né? @Will
+        comboBoxAutores.addItem("--- Escolha um Autor ---");
+        for(int i = 0; i < autores.size(); i++){  //O for percorre o arrayList com os autores
+            comboBoxAutores.addItem(autores.get(i).getName() + " " + autores.get(i).getFname()); //Aqui é adicionado ao comboBox os nomes dos autores
+        }
+//        comboBoxAutores.setSelectedItem(0); //Deixa o comboBox selecionado com a primeira opção. No Caso "Escolha um autor"
+            
     }
 
     
@@ -54,6 +66,11 @@ public class formIncluir extends javax.swing.JFrame {
 
         tabbedPane = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        textFieldNomeAuthors = new javax.swing.JTextField();
+        textFieldSobrenomeAuthors = new javax.swing.JTextField();
+        buttonInserirAuthor = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -69,20 +86,58 @@ public class formIncluir extends javax.swing.JFrame {
         textFieldIsbn = new javax.swing.JTextField();
         textFieldPreco = new javax.swing.JTextField();
         buttonCadastrar = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         comboBoxAutor = new javax.swing.JComboBox<>();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        listAutores = new javax.swing.JList<>();
+        jLabel9 = new javax.swing.JLabel();
+        comboBoxAutores = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Cadastro");
+
+        jLabel7.setText("Nome:");
+
+        jLabel8.setText("Sobrenome:");
+
+        buttonInserirAuthor.setText("Inserir");
+        buttonInserirAuthor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonInserirAuthorActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 419, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(72, 72, 72)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(buttonInserirAuthor)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel7))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(textFieldNomeAuthors)
+                            .addComponent(textFieldSobrenomeAuthors, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 314, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(70, 70, 70)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(textFieldNomeAuthors, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(27, 27, 27)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(textFieldSobrenomeAuthors, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 89, Short.MAX_VALUE)
+                .addComponent(buttonInserirAuthor)
+                .addGap(65, 65, 65))
         );
 
         tabbedPane.addTab("Autor", jPanel1);
@@ -140,7 +195,7 @@ public class formIncluir extends javax.swing.JFrame {
 
         jLabel3.setText("Preço");
 
-        jLabel4.setText("Autor");
+        jLabel4.setText("Editoras");
 
         textFieldPreco.setToolTipText("");
 
@@ -151,64 +206,86 @@ public class formIncluir extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("Voltar");
-
         comboBoxAutor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        listAutores.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(listAutores);
+
+        jLabel9.setText("Autores");
+
+        comboBoxAutores.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboBoxAutores.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxAutoresActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textFieldPreco, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(comboBoxAutor, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
                         .addGap(31, 31, 31)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(textFieldTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(textFieldIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(159, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(buttonCadastrar)
-                .addContainerGap())
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel9))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(textFieldPreco, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                                    .addComponent(comboBoxAutor, 0, 160, Short.MAX_VALUE)
+                                    .addComponent(comboBoxAutores, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2))
+                                .addGap(31, 31, 31)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(textFieldTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(textFieldIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(buttonCadastrar)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(textFieldTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addContainerGap(28, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(textFieldIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(15, 15, 15)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(textFieldTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(textFieldIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(15, 15, 15)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(textFieldPreco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(25, 25, 25)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(comboBoxAutor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(26, 26, 26)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(textFieldPreco, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(25, 25, 25)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(comboBoxAutor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 79, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonCadastrar)
-                    .addComponent(jButton2))
+                    .addComponent(jLabel9)
+                    .addComponent(comboBoxAutores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
+                .addComponent(buttonCadastrar)
                 .addContainerGap())
         );
 
@@ -234,10 +311,9 @@ public class formIncluir extends javax.swing.JFrame {
         String nome = textFieldNome.getText(); //Pega o valor do textField nome
         String url = textFieldURL.getText();   //Pega o valor do textField URL
         
-        Conexao conn = new Conexao("localhost", "APS", "postgres", "Will"); //Conexão com o BD (Lembre-se sempre de mudar o usuario e senha para conectar com seu BD local, se for testar
         Editora editora = new Editora(); //Instancia um novo objeto do tipo Editora
         
-        String res = editora.insert(conn, nome, url); // executa o comando insert into do BD para inserir uma nova editora
+        String res = editora.insert(this.conexao.getConn(), nome, url); // executa o comando insert into do BD para inserir uma nova editora
         
         if(res.equals("Sucesso")){
             JOptionPane.showMessageDialog(null, "A Editora foi inserida com Sucesso!");
@@ -247,7 +323,8 @@ public class formIncluir extends javax.swing.JFrame {
             textFieldURL.setText("");
             
         }else{
-            JOptionPane.showMessageDialog(null, "A Editora não foi inserida!\nRevise as informações");
+            textFieldNome.setText("");
+            textFieldURL.setText("");
         }
         
         
@@ -266,32 +343,91 @@ public class formIncluir extends javax.swing.JFrame {
                 publisherId = editoras.get(i).getId(); //Pega o ID da Editora antes verificada
             }
         }
-        Conexao conn = new Conexao("localhost", "APS", "postgres", "Will"); // Realiza a conexão com o BD
-        Livros livro = new Livros(); //Instancia um objeto do tipo Livro
         
+        Livros livro = new Livros(); //Instancia um objeto do tipo Livro
+        LivrosAutores livroAutor = new LivrosAutores();
         
         System.out.println("Title: " + title); //Apagar dps todos esses print
         System.out.println("ISBN: " + isbn);
         System.out.println("ID: " + publisherId);
         System.out.println("Preço: " + price);
         
-        String res = livro.insert(conn, title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+        String res = livro.insert(this.conexao.getConn(), title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
         
         if(res.equals("Sucesso")){
+            for(int i=0; i < modelList.getSize(); i++){
+                for(int y = 0; y < autores.size();y++){
+                    if(modelList.getElementAt(i).equals(autores.get(y).getName()+" "+autores.get(y).getFname())){
+                        /*Essa iteração faz uma comparação entre os autores selecionados na modelList com os
+                        autores no arrayList do BD. A cada autor do modelList encotrado no BD, ele pega o Author_id
+                        e associa o livro a ser cadastrado à esse autor pelo authors_id e o isbn*/
+
+                        System.out.println(autores.get(y).getName());
+                        String r = livroAutor.insert(this.conexao.getConn(), isbn, autores.get(y).getAuthorId(), seq_no); //Faz associação do autor com o livro, através da tabela booksAuthors
+                        seq_no += 1;
+                        System.out.println(r);
+                    }
+                }
+            }
+            
+            
             JOptionPane.showMessageDialog(null, "O livro foi cadastrado com Sucesso!");
             new formListar().AtualizaTable();//Atualiza a tabela livros após cadastrar um novo livro
             
             textFieldTitulo.setText("");
             textFieldIsbn.setText("");
             textFieldPreco.setText("");
-            
+            modelList.clear();//Limpa o modelList
             PopularComboBox();
         }else{
-            JOptionPane.showMessageDialog(null, "O Livro não foi cadastrado!\nRevise as informações");
+            textFieldTitulo.setText("");
+            textFieldIsbn.setText("");
+            textFieldPreco.setText("");
+            modelList.clear();//Limpa o modelList
+            PopularComboBox();
         }
         
         
     }//GEN-LAST:event_buttonCadastrarActionPerformed
+
+    private void buttonInserirAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInserirAuthorActionPerformed
+        // Botão inserir Autores
+
+        String nomeAutor = textFieldNomeAuthors.getText(); //Pega o valor do textField nome
+        String sobrenomeAutor = textFieldSobrenomeAuthors.getText();   //Pega o valor do textField Sobrenome
+
+        
+
+        Autor author = new Autor(); //Instancia um novo objeto do tipo Autor
+
+        String res = author.insert(this.conexao.getConn(), nomeAutor, sobrenomeAutor); // executa o comando insert into do BD para inserir um novo autor
+
+        if(res.equals("Sucesso")){
+            JOptionPane.showMessageDialog(null, "O Autor foi inserido com Sucesso!");
+            new formListar().AtualizaTable(); //Atualiza a tabela editora para inserir um novo autor
+            
+            PopularComboBox();
+        }else{
+            textFieldNomeAuthors.setText("");
+            textFieldSobrenomeAuthors.setText("");
+        }
+        
+    }//GEN-LAST:event_buttonInserirAuthorActionPerformed
+
+    private void comboBoxAutoresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxAutoresActionPerformed
+        
+        this.listAutores.setModel(modelList); //seta o modelo da lista para o Jlist listAutores
+        
+        modelList.addElement(comboBoxAutores.getSelectedItem());//Adiciona os autores do ArrayList de autores no modelList
+        
+        for(int i = 0; i < modelList.size(); i++){
+            if(comboBoxAutores.getItemAt(i) == null || modelList.getElementAt(i).equals("--- Escolha um Autor ---")){
+                modelList.removeElementAt(i);
+                
+            }
+        }
+        
+    }//GEN-LAST:event_comboBoxAutoresActionPerformed
 
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
@@ -335,21 +471,29 @@ public class formIncluir extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCadastrar;
     private javax.swing.JButton buttonInserir;
+    private javax.swing.JButton buttonInserirAuthor;
     private javax.swing.JComboBox<String> comboBoxAutor;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> comboBoxAutores;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList<String> listAutores;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JTextField textFieldIsbn;
     private javax.swing.JTextField textFieldNome;
+    private javax.swing.JTextField textFieldNomeAuthors;
     private javax.swing.JTextField textFieldPreco;
+    private javax.swing.JTextField textFieldSobrenomeAuthors;
     private javax.swing.JTextField textFieldTitulo;
     private javax.swing.JTextField textFieldURL;
     // End of variables declaration//GEN-END:variables
