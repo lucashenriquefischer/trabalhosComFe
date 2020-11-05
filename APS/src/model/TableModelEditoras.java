@@ -120,11 +120,15 @@ public class TableModelEditoras extends AbstractTableModel{
         
     }
     
-    public void Deletar(Conexao conn, String nomeEditora, String urlEditora, int linha){
+    public void Deletar(Conexao conn, String nome, String url, int linha){
         for(int i = 0; i < dados.size(); i++){
-            if(nomeEditora.equals(dados.get(i).getNome()) && urlEditora.equals(dados.get(i).getUrl())){
-                dados.get(i).delete(conn, "name = '"+ nomeEditora + "' AND url = '" + urlEditora + "';");
-                dados.remove(i);
+            if(nome.equals(dados.get(i).getNome()) && url.equals(dados.get(i).getUrl())){
+                String res = dados.get(i).delete(conn, "name = '"+ nome + "' AND url = '" + url + "';");
+                if(res.contains("ERROR")){
+                    JOptionPane.showMessageDialog(null, "Não foi possível excluir a Editora");
+                }else{
+                    dados.remove(i);
+                }
             }
         }
         this.fireTableRowsDeleted(linha, linha);

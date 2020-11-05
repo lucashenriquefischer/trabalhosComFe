@@ -113,6 +113,8 @@ public class formListar extends javax.swing.JFrame {
                 Logger.getLogger(formListar.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
+        new formIncluir().AtualizaDadosSeqNo();
     }
    
     public void AtualizaTable(){
@@ -126,6 +128,8 @@ public class formListar extends javax.swing.JFrame {
         
         PreencherTable();//Chama o método para preencher novamente as tabelas
     }
+    
+   
 
     /**
      * This method is called from within the constructor to initialize the form.

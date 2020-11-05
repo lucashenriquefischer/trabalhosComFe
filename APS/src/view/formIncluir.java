@@ -5,7 +5,12 @@
  */
 package view;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -15,6 +20,7 @@ import model.Livros;
 import model.LivrosAutores;
 import model.TableModelEditoras;
 import model.TableModelAutores;
+import model.TableModelLivros;
 
 /**
  *
@@ -30,7 +36,7 @@ public class formIncluir extends javax.swing.JFrame {
     private DefaultListModel modelList = new DefaultListModel();//Instancia um modelo de lista(modelList) do tipo Default
     private formBdconection conexao = new formBdconection();//Instancia um objeto de conexão com o BD
     
-    private int seq_no = 0;//foi feito uma incremetação pra essa variável
+    private static List<LivrosAutores> seq_noBd = new ArrayList<>();//foi feito uma incremetação pra essa variável
     
     public formIncluir() {
         initComponents();
@@ -91,6 +97,7 @@ public class formIncluir extends javax.swing.JFrame {
         listAutores = new javax.swing.JList<>();
         jLabel9 = new javax.swing.JLabel();
         comboBoxAutores = new javax.swing.JComboBox<>();
+        buttonRemoverAutor = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cadastro");
@@ -224,6 +231,14 @@ public class formIncluir extends javax.swing.JFrame {
             }
         });
 
+        buttonRemoverAutor.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        buttonRemoverAutor.setText("-");
+        buttonRemoverAutor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonRemoverAutorActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -252,7 +267,11 @@ public class formIncluir extends javax.swing.JFrame {
                                     .addComponent(textFieldTitulo, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(textFieldIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                                .addComponent(buttonRemoverAutor)
+                                .addGap(9, 9, 9))))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(buttonCadastrar)))
@@ -280,10 +299,15 @@ public class formIncluir extends javax.swing.JFrame {
                             .addComponent(jLabel4)
                             .addComponent(comboBoxAutor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(comboBoxAutores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(comboBoxAutores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(buttonRemoverAutor)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
                 .addComponent(buttonCadastrar)
                 .addContainerGap())
@@ -336,7 +360,7 @@ public class formIncluir extends javax.swing.JFrame {
         String title = textFieldTitulo.getText(); //Pega o valor do TextField Titulo
         String isbn = textFieldIsbn.getText(); //Pega o valor do TextField ISBN
         int publisherId = 0; //Pega o valor selecionado no ComboBox
-        double price = Double.parseDouble(textFieldPreco.getText()); // Pega o valor do TextField Preço
+        String price = textFieldPreco.getText(); // Pega o valor do TextField Preço
         
         for(int i=0; i < editoras.size(); i++){
             if(comboBoxAutor.getSelectedItem().equals(editoras.get(i).getNome())){ //Verifica a editora selecionada no comboBox como a do ArrayList para pegar o Id da editora
@@ -352,41 +376,47 @@ public class formIncluir extends javax.swing.JFrame {
         System.out.println("ID: " + publisherId);
         System.out.println("Preço: " + price);
         
-        String res = livro.insert(this.conexao.getConn(), title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+        TableModelLivros book = new TableModelLivros();
+        boolean verifica = book.VerificaIsbn(isbn);//Verifica se o isbn a ser inserido existe no BD
         
-        if(res.equals("Sucesso")){
-            for(int i=0; i < modelList.getSize(); i++){
-                for(int y = 0; y < autores.size();y++){
-                    if(modelList.getElementAt(i).equals(autores.get(y).getName()+" "+autores.get(y).getFname())){
-                        /*Essa iteração faz uma comparação entre os autores selecionados na modelList com os
-                        autores no arrayList do BD. A cada autor do modelList encotrado no BD, ele pega o Author_id
-                        e associa o livro a ser cadastrado à esse autor pelo authors_id e o isbn*/
+        if(verifica == false){
+            String res = livro.insert(this.conexao.getConn(), title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+        
+            if(res.equals("Sucesso")){
+                for(int i=0; i < modelList.getSize(); i++){
+                    for(int y = 0; y < autores.size();y++){
+                        if(modelList.getElementAt(i).equals(autores.get(y).getName()+" "+autores.get(y).getFname())){
+                            /*Essa iteração faz uma comparação entre os autores selecionados na modelList com os
+                            autores no arrayList do BD. A cada autor do modelList encotrado no BD, ele pega o Author_id
+                            e associa o livro a ser cadastrado à esse autor pelo authors_id e o isbn*/
 
-                        System.out.println(autores.get(y).getName());
-                        String r = livroAutor.insert(this.conexao.getConn(), isbn, autores.get(y).getAuthorId(), seq_no); //Faz associação do autor com o livro, através da tabela booksAuthors
-                        seq_no += 1;
-                        System.out.println(r);
+                            int seq_no = 0;
+                            for(int j = 0; j < seq_noBd.size(); j++){ //Iteração para incrementar a variável seq_no e adicioná-la ao BD
+
+                                if(seq_noBd.get(j).getSeq_no() >= seq_no){
+                                    seq_no = seq_noBd.get(j).getSeq_no() + 1;
+                                    AtualizaDadosSeqNo();
+                                }
+                            }
+
+                            String r = livroAutor.insert(this.conexao.getConn(), isbn, autores.get(y).getAuthorId(), seq_no); //Faz associação do autor com o livro, através da tabela booksAuthors
+                        }
                     }
                 }
+
+
+                JOptionPane.showMessageDialog(null, "O livro foi cadastrado com Sucesso!");
+                new formListar().AtualizaTable();//Atualiza a tabela livros após cadastrar um novo livro
+
+                limpaCamposLivros();
+                
+            }else{
+                limpaCamposLivros();
             }
-            
-            
-            JOptionPane.showMessageDialog(null, "O livro foi cadastrado com Sucesso!");
-            new formListar().AtualizaTable();//Atualiza a tabela livros após cadastrar um novo livro
-            
-            textFieldTitulo.setText("");
-            textFieldIsbn.setText("");
-            textFieldPreco.setText("");
-            modelList.clear();//Limpa o modelList
-            PopularComboBox();
         }else{
-            textFieldTitulo.setText("");
-            textFieldIsbn.setText("");
-            textFieldPreco.setText("");
-            modelList.clear();//Limpa o modelList
-            PopularComboBox();
+            JOptionPane.showMessageDialog(null, "Esse ISBN já existe!");
+            limpaCamposLivros();
         }
-        
         
     }//GEN-LAST:event_buttonCadastrarActionPerformed
 
@@ -396,8 +426,6 @@ public class formIncluir extends javax.swing.JFrame {
         String nomeAutor = textFieldNomeAuthors.getText(); //Pega o valor do textField nome
         String sobrenomeAutor = textFieldSobrenomeAuthors.getText();   //Pega o valor do textField Sobrenome
 
-        
-
         Autor author = new Autor(); //Instancia um novo objeto do tipo Autor
 
         String res = author.insert(this.conexao.getConn(), nomeAutor, sobrenomeAutor); // executa o comando insert into do BD para inserir um novo autor
@@ -406,6 +434,8 @@ public class formIncluir extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "O Autor foi inserido com Sucesso!");
             new formListar().AtualizaTable(); //Atualiza a tabela editora para inserir um novo autor
             
+            textFieldNomeAuthors.setText("");
+            textFieldSobrenomeAuthors.setText("");
             PopularComboBox();
         }else{
             textFieldNomeAuthors.setText("");
@@ -429,9 +459,50 @@ public class formIncluir extends javax.swing.JFrame {
         
     }//GEN-LAST:event_comboBoxAutoresActionPerformed
 
+    private void buttonRemoverAutorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonRemoverAutorActionPerformed
+        //Botão Remover Autor do modelList
+        
+        int index = listAutores.getSelectedIndex();
+        modelList.remove(index);
+    }//GEN-LAST:event_buttonRemoverAutorActionPerformed
+
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
+
+    public List<LivrosAutores> getSeq_noBd() {
+        return seq_noBd;
+    }
+
+    public void setSeq_noBd(List<LivrosAutores> seq_noBd) {
+        this.seq_noBd = seq_noBd;
+    }
+    
+    public void limpaCamposLivros(){
+        textFieldTitulo.setText("");
+        textFieldIsbn.setText("");
+        textFieldPreco.setText("");
+        modelList.clear();//Limpa o modelList
+        PopularComboBox();
+    }
+    
+    
+
+    public void AtualizaDadosSeqNo(){
+        //Método puxa o dado seq_no da tabela booksauthors do BD para fazer a incrementação
+        LivrosAutores livroAutor = new LivrosAutores();
+        livroAutor.select(conexao.getConn());
+        ResultSet result = livroAutor.getResult(); // Pega os resultados do select
+            try {
+                while (result.next()) { 
+                    LivrosAutores livroAutor2 = new LivrosAutores();
+                    livroAutor2.setSeq_no(result.getInt("seq_no"));
+                    seq_noBd.add(livroAutor2);
+                }
+            }catch (SQLException ex) {
+                Logger.getLogger(formListar.class.getName()).log(Level.SEVERE, null, ex);
+            }
+   }
 
     /**
      * @param args the command line arguments
@@ -472,6 +543,7 @@ public class formIncluir extends javax.swing.JFrame {
     private javax.swing.JButton buttonCadastrar;
     private javax.swing.JButton buttonInserir;
     private javax.swing.JButton buttonInserirAuthor;
+    private javax.swing.JButton buttonRemoverAutor;
     private javax.swing.JComboBox<String> comboBoxAutor;
     private javax.swing.JComboBox<String> comboBoxAutores;
     private javax.swing.JLabel jLabel1;

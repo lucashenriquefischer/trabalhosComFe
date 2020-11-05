@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
+import view.formIncluir;
 
 /**
  *
@@ -108,20 +109,25 @@ public class TableModelLivros extends AbstractTableModel{
         int verificacao = JOptionPane.showConfirmDialog(null, "O valor: " + valor + " será alterado. Confirmar?");
         if(verificacao == 0){ 
             //Faz a verificação caso a confirmação no JOptionPane seja positiva. Se for, ele altera a célula atravéso Switch Case.
-            switch(coluna){
-            case 0:  
-                dados.get(linha).setTitle((String) valor);
-                break;
-            case 1:  
-                dados.get(linha).setIsbn((String) valor);
-                break;
-            case 2:  
-                dados.get(linha).setPrice(Double.parseDouble((String) valor));
-                break;
-        }
-            dados.get(linha).update(dados.get(linha).getConn(), valorNovo, valorAnterior);//Executa o comando update no BD
-            this.fireTableRowsUpdated(linha, linha); //Atualiza as linhas do JTable. Mas acho que está sendo inútil
+            boolean verifica = VerificaIsbn(valor.toString());//Verifica se existe o isbn a ser modificado existe no BD
+            if(verifica == false){
+                switch(coluna){
+                case 0:  
+                    dados.get(linha).setTitle((String) valor);
+                    break;
+                case 1:  
+                    dados.get(linha).setIsbn((String) valor);
+                    break;
+                case 2:  
+                    dados.get(linha).setPrice(Double.parseDouble((String) valor));
+                    break;
+                }
             
+                dados.get(linha).update(dados.get(linha).getConn(), valorNovo, valorAnterior);//Executa o comando update no BD
+                this.fireTableRowsUpdated(linha, linha); //Atualiza as linhas do JTable. Mas acho que está sendo inútil
+            }else{
+                JOptionPane.showMessageDialog(null, "Esse ISBN já Existe!");
+            }
         }
         else{
             //Caso a confirmação no JOptionPane for negativa, ele não executa a alteração
@@ -148,6 +154,15 @@ public class TableModelLivros extends AbstractTableModel{
         this.fireTableRowsDeleted(linha, linha);
     }
     
+    public boolean VerificaIsbn(String isbn){
+        //Trata a existencia de ISBN's iguais
+        for(Livros book: this.dados){
+            if(book.getIsbn().equals(isbn)){
+                return true;
+            }
+        }
+        return false;
+    }
     
         
     public static List<Livros> getDados() {

@@ -71,41 +71,14 @@ public class LivrosAutores {
     
     }
     
-    public String delete(Conexao conn,String whereClause){
+    public String select(Conexao conn){
         String res;
-        if(whereClause.equals("")){
-            res = conn.executeCommand("delete from authors");
-        }else{
-            res = conn.executeCommand("delete from authors where "+ whereClause);
-        }
         
-        return res;
-        
-    }
-    
-    public String update(Conexao conn,String setClause,String whereClause){
-        String res;
-        if(whereClause.equals("")){
-            res = conn.executeCommand("update authors set "+setClause);
-        }else{
-            res = conn.executeCommand("update authors set "+setClause+" where "+ whereClause) + ";";
-        }
-        return res;
-        
-    }
-    
-    public String select(Conexao conn,String whereClause){
-        String res;
-        if(whereClause.equals("")){
-            res = conn.executeCommand("select * from authors");
-        }else{
-            res = conn.executeCommand("select * from authors where "+whereClause);
-        }
-        
+        res = conn.executeCommand("select seq_no from booksauthors;");
+        System.out.println(res);
         if(res.equals("Sucesso")){
             ResultSet result = conn.getResult();
             this.result = result;
-            
         }
         return res;
     }

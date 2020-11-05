@@ -73,7 +73,7 @@ public class Livros{
     
     
     
-    public String Validate(String title, String isbn, Double price){
+    public String Validate(String title, String isbn, String price){
         Convert validar = new Convert();
         
         if(title.length() > 60){
@@ -84,11 +84,8 @@ public class Livros{
             JOptionPane.showMessageDialog(null, "O ISBN do livro deve ter no máximo 13 caracters!");
             return "O ISBN do livro deve ter no máximo 13 caracters";
         }
-        if(validar.isNumber(isbn)){
-            JOptionPane.showMessageDialog(null, "O ISBN deve conter apenas números!");
-            return "O ISBN deve conter apenas números!";
-        }
-        if(validar.isNumber(Double.toString(price))){
+        
+        if(validar.isNumber(price) == false){
             JOptionPane.showMessageDialog(null, "O Preço deve conter apenas números!");
             return "O Preço deve conter apenas números!";
         }
@@ -96,14 +93,14 @@ public class Livros{
         return "Sucesso";
     }
     
-    public String insert(Conexao conn, String title, String isbn, int publisherId, double price){
+    public String insert(Conexao conn, String title, String isbn, int publisherId, String price){
         String res;
         
         res = Validate(title, isbn, price);
         
         if(res.equals("Sucesso")){
             conn.executeCommand("insert into books (title,isbn,publisher_id,price) "
-                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + price + ");");
+                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + Double.parseDouble(price) + ");");
             return "Sucesso";
             
         }
