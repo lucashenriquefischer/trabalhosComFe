@@ -74,8 +74,8 @@ public class Livros{
     
     
     
-    public String Validate(String title, String isbn){
-        
+    public String Validate(String title, String isbn, String price){
+        Convert convert = new Convert();
         if(title.length() > 60){
             JOptionPane.showMessageDialog(null, "O título do livro deve ter no máximo 60 caracters!");
             return "O título do livro deve ter no máximo 60 caracters";
@@ -84,6 +84,9 @@ public class Livros{
             JOptionPane.showMessageDialog(null, "O ISBN do livro deve ter no máximo 13 caracters!");
             return "O ISBN do livro deve ter no máximo 13 caracters";
         }
+        if(convert.isDolar(price) == false){
+            return "Não é Dolar";
+        }
         
         return "Sucesso";
     }
@@ -91,14 +94,18 @@ public class Livros{
     public String insert(Conexao conn, String title, String isbn, int publisherId, String price) throws ParseException{
         String res;
         
-        res = Validate(title, isbn);
+        res = Validate(title, isbn, price);
+        
+        if(res.equals("Não é Dolar")){
+            Convert convert = new Convert();
+            price = Double.toString(convert.numberConvert(price));
+            res = "Sucesso";
+        }
         
         if(res.equals("Sucesso")){
-            Convert convert = new Convert();
-            Double priceConverted = convert.numberConvert(price);
             
             conn.executeCommand("insert into books (title,isbn,publisher_id,price) "
-                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + priceConverted + ");");
+                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + price + ");");
             return "Sucesso";
             
         }

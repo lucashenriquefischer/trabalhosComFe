@@ -24,7 +24,7 @@ public class Convert {
             NumberFormat nf = NumberFormat.getNumberInstance();
             
             double number = nf.parse(numberString).doubleValue();
-		return number;
+            return number;
             
         }
         
@@ -49,11 +49,11 @@ public class Convert {
                 return false;
 	    }
 	    try {
-	     Double number = Double.parseDouble(numberString);
-	     if(number < 0.0) {
-	    	 return false;
-	     }
-	    } catch (NumberFormatException nfe) {
+                Double number = Double.parseDouble(numberString);
+                if(number < 0.0) {
+                    return false;
+                }
+	    }catch (NumberFormatException nfe) {
 	        return false;
 	    }
 	    return true;
