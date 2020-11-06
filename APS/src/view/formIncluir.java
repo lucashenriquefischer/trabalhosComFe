@@ -7,6 +7,7 @@ package view;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,7 +36,6 @@ public class formIncluir extends javax.swing.JFrame {
     private List<Autor> autores = TableModelAutores.getDados(); //recebe os autores antes já listados do BD
     private DefaultListModel modelList = new DefaultListModel();//Instancia um modelo de lista(modelList) do tipo Default
     private formBdconection conexao = new formBdconection();//Instancia um objeto de conexão com o BD
-    
     private static List<LivrosAutores> seq_noBd = new ArrayList<>();//foi feito uma incremetação pra essa variável
     
     public formIncluir() {
@@ -370,17 +370,19 @@ public class formIncluir extends javax.swing.JFrame {
         
         Livros livro = new Livros(); //Instancia um objeto do tipo Livro
         LivrosAutores livroAutor = new LivrosAutores();
-        
-        System.out.println("Title: " + title); //Apagar dps todos esses print
-        System.out.println("ISBN: " + isbn);
-        System.out.println("ID: " + publisherId);
-        System.out.println("Preço: " + price);
-        
         TableModelLivros book = new TableModelLivros();
         boolean verifica = book.VerificaIsbn(isbn);//Verifica se o isbn a ser inserido existe no BD
         
         if(verifica == false){
-            String res = livro.insert(this.conexao.getConn(), title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+            
+            String res = "";
+            try {
+                res = livro.insert(this.conexao.getConn(), title, isbn, publisherId, price); // Executa o comando insert into no BD para inserir um novo livro
+            } catch (ParseException ex) {
+                JOptionPane.showMessageDialog(null, "O Preço deve conter apenas números!");
+                textFieldPreco.setText("");
+                return;
+            }
         
             if(res.equals("Sucesso")){
                 for(int i=0; i < modelList.getSize(); i++){
@@ -415,7 +417,8 @@ public class formIncluir extends javax.swing.JFrame {
             }
         }else{
             JOptionPane.showMessageDialog(null, "Esse ISBN já existe!");
-            limpaCamposLivros();
+            textFieldIsbn.setText("");
+        
         }
         
     }//GEN-LAST:event_buttonCadastrarActionPerformed

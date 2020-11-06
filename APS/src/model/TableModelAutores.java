@@ -83,7 +83,6 @@ public class TableModelAutores extends AbstractTableModel{
         if(coluna == 0 || coluna == 1 || coluna == 2){
             return true;
         }
- 
         return false;
     }
     
@@ -98,12 +97,13 @@ public class TableModelAutores extends AbstractTableModel{
         this.valorNovo = this.colunasBD[coluna+1] + " = " + "'" + valor + "'";
         //--------------------------//
         
-        System.out.println("Valor Novo: " + valorNovo);//Apagar posteriormente
-        
         if( valor == null){ return;} //verifica se o parametro a ser alterado é nulo. Se for, não permite alteração
         
+
         //JOptionPane, gera uma tela de confirmação do valor a ser alterado
-        int verificacao = JOptionPane.showConfirmDialog(null, "O valor: " + valor + " será alterado. Confirmar?");
+//        int verificacao = JOptionPane.showConfirmDialog(null, "O valor: " + valor + " será alterado. Confirmar?");
+        int verificacao = JOptionPane.showConfirmDialog(null, "O "+ this.colunas[coluna] + " \"" + this.getValueAt(linha, coluna) + "\" será alterado"
+                + " para \"" + valor + "\"\nConfirmar?","AVISO!", JOptionPane.YES_NO_OPTION);
         if(verificacao == 0){ 
             //Faz a verificação caso a confirmação no JOptionPane seja positiva. Se for, ele altera a célula atravéso Switch Case.
             switch(coluna){
@@ -115,7 +115,6 @@ public class TableModelAutores extends AbstractTableModel{
                     break;
             
         }
-            System.out.println("Valor antigo: " + valorAnterior);//Apagar posteriormente.
             dados.get(linha).update(dados.get(linha).getConn(), valorNovo, valorAnterior);//Executa o comando update no BD
             this.fireTableRowsUpdated(linha, linha); //Atualiza as linhas do JTable. Mas acho que está sendo inútil
             
@@ -124,12 +123,9 @@ public class TableModelAutores extends AbstractTableModel{
             //Caso a confirmação no JOptionPane for negativa, ele não executa a alteração
             return;
         }
-        
-        
-         
-        
     }
     
+
     public void Deletar(Conexao conn, String nome, String sobrenome, int linha){
         
         for(int i = 0; i < dados.size(); i++){

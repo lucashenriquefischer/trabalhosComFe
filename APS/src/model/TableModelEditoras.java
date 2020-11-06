@@ -49,10 +49,8 @@ public class TableModelEditoras extends AbstractTableModel{
         // o switch funciona QUASE como um for. Não sei explicar na escrita, mas funciona :)
         switch(coluna){
             case 0:
-//                System.out.println("test02");
                 return dados.get(linha).getNome();
             case 1:
-//                System.out.println("teste03");
                 return dados.get(linha).getUrl();
         }
         return null;
@@ -75,7 +73,6 @@ public class TableModelEditoras extends AbstractTableModel{
         if(coluna == 0 || coluna == 1 || coluna == 2){
             return true;
         }
- 
         return false;
     }
     
@@ -90,12 +87,11 @@ public class TableModelEditoras extends AbstractTableModel{
         this.valorNovo = this.colunasBD[coluna+1] + " = " + "'" + (String)valor + "'";
         //--------------------------//
         
-        System.out.println("Valor Novo: " + valorNovo);//Apagar posteriormente
-        
         if( valor == null){ return;} //verifica se o parametro a ser alterado é nulo. Se for, não permite alteração
         
         //JOptionPane, gera uma tela de confirmação do valor a ser alterado
-        int verificacao = JOptionPane.showConfirmDialog(null, "O valor: " + valor + " será alterado. Confirmar?");
+        int verificacao = JOptionPane.showConfirmDialog(null, "O "+ this.colunas[coluna] + " \"" + this.getValueAt(linha, coluna) + "\" será alterado"
+                + " para \"" + valor + "\"\nConfirmar?","AVISO!", JOptionPane.YES_NO_OPTION);
         if(verificacao == 0){ 
             //Faz a verificação caso a confirmação no JOptionPane seja positiva. Se for, ele altera a célula atravéso Switch Case.
             switch(coluna){
@@ -114,10 +110,6 @@ public class TableModelEditoras extends AbstractTableModel{
             //Caso a confirmação no JOptionPane for negativa, ele não executa a alteração
             return;
         }
-        
-        System.out.println("Valor antigo: " + valorAnterior);//Apagar posteriormente.
-         
-        
     }
     
     public void Deletar(Conexao conn, String nome, String url, int linha){

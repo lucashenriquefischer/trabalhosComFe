@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
-import view.formIncluir;
 
 /**
  *
@@ -55,13 +54,10 @@ public class TableModelLivros extends AbstractTableModel{
         // o switch funciona QUASE como um for. Não sei explicar na escrita, mas funciona :)
         switch(coluna){
             case 0:
-//                System.out.println("teste01");
                 return dados.get(linha).getTitle();
             case 1:
-//                System.out.println("test02");
                 return dados.get(linha).getIsbn();
             case 2:
-//                System.out.println("teste03");
                 return dados.get(linha).getPrice();
         }
         this.fireTableRowsInserted(linha, linha);
@@ -101,12 +97,12 @@ public class TableModelLivros extends AbstractTableModel{
         this.valorNovo = this.colunasBD[coluna] + " = " + "'" + valor + "'";
         //--------------------------//
         
-        System.out.println("Valor Novo: " + valorNovo);//Apagar posteriormente
         
         if( valor == null){ return;} //verifica se o parametro a ser alterado é nulo. Se for, não permite alteração
         
         //JOptionPane, gera uma tela de confirmação do valor a ser alterado
-        int verificacao = JOptionPane.showConfirmDialog(null, "O valor: " + valor + " será alterado. Confirmar?");
+        int verificacao = JOptionPane.showConfirmDialog(null, "O "+ this.colunas[coluna] + " \"" + this.getValueAt(linha, coluna) + "\" será alterado"
+                + " para \"" + valor + "\"\nConfirmar?","AVISO!", JOptionPane.YES_NO_OPTION);
         if(verificacao == 0){ 
             //Faz a verificação caso a confirmação no JOptionPane seja positiva. Se for, ele altera a célula atravéso Switch Case.
             boolean verifica = VerificaIsbn(valor.toString());//Verifica se existe o isbn a ser modificado existe no BD
@@ -133,10 +129,6 @@ public class TableModelLivros extends AbstractTableModel{
             //Caso a confirmação no JOptionPane for negativa, ele não executa a alteração
             return;
         }
-        
-        System.out.println("Valor antigo: " + valorAnterior);//Apagar posteriormente.
-         
-        
     }
     
     public void Deletar(Conexao conn, String isbn, int linha){

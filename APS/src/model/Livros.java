@@ -6,6 +6,7 @@
 package model;
 
 import java.sql.ResultSet;
+import java.text.ParseException;
 import javax.swing.JOptionPane;
 
 /**
@@ -73,8 +74,7 @@ public class Livros{
     
     
     
-    public String Validate(String title, String isbn, String price){
-        Convert validar = new Convert();
+    public String Validate(String title, String isbn){
         
         if(title.length() > 60){
             JOptionPane.showMessageDialog(null, "O título do livro deve ter no máximo 60 caracters!");
@@ -85,22 +85,20 @@ public class Livros{
             return "O ISBN do livro deve ter no máximo 13 caracters";
         }
         
-        if(validar.isNumber(price) == false){
-            JOptionPane.showMessageDialog(null, "O Preço deve conter apenas números!");
-            return "O Preço deve conter apenas números!";
-        }
-        
         return "Sucesso";
     }
     
-    public String insert(Conexao conn, String title, String isbn, int publisherId, String price){
+    public String insert(Conexao conn, String title, String isbn, int publisherId, String price) throws ParseException{
         String res;
         
-        res = Validate(title, isbn, price);
+        res = Validate(title, isbn);
         
         if(res.equals("Sucesso")){
+            Convert convert = new Convert();
+            Double priceConverted = convert.numberConvert(price);
+            
             conn.executeCommand("insert into books (title,isbn,publisher_id,price) "
-                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + Double.parseDouble(price) + ");");
+                    + "values ('" + title + "','" + isbn + "'," + publisherId + "," + priceConverted + ");");
             return "Sucesso";
             
         }
